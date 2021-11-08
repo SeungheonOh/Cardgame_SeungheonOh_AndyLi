@@ -20,14 +20,31 @@ drawParser    = lambda d: d
 
 apiDef = { 
   "new"    : ("/deck/new/shuffle/?deck_count={}", wrapFailure(newDeckParser))
-, "draw"   : ("/deck/{}/draw/?count={}", wrapFailure(drawParser))
+, "throw":   ("/deck/{}/pile/{}/draw/>cards={}", wrapFailure(id))
+, "add": ("/deck/{}/pile/{}/add/cards={}", wrapFailure(id))
+, "random" : ("/deck/{}/draw/?count={}", wrapFailure(drawParser))
 , "shuffle": ("/deck/{}/shuffle/?remainting={}", wrapFailure(id))
 }
+
+def get_code_list(dicta): 
+  list = []
+  for card in dicta['cards']:
+    list.append(card['code'])
+  print(list)
+  return list
 
 api = mkEndpoints(apiDef)
 
 deck_id = api["new"](4)
 print(deck_id)
 
-print(api["draw"](deck_id, 5))
+dicta = api["random"](deck_id, 5)
+print(dicta)
+print(api["add"](deck_id, "pileid", get_code_list(dicta)))
+#print(api["add"](deck_id))
+
+'''
 print(api["shuffle"](deck_id, True))
+print(api["random"](deck_id, 1))
+print(api["throw"](deck_id))
+'''
