@@ -29,11 +29,15 @@ def choices(scr, cards):
     start = len(cards) - int(width/CARDX)
 
   def draw():
-    scr.addstr(height-CARDY-2, 1, "Cards remaining: {}".format(len(cards)))
-    p = list(zip(range(0, len(cards)), cards[start:]))[:int(width/CARDX)]
-    boxes = fmap(lambda c: (c[0], c[1], scr.subwin(CARDY, CARDX, height-CARDY-1, c[0]*CARDX+1)), p)
+    nonlocal height, width
+    height, width = scr.getmaxyx()
+    deck = scr.subwin(CARDY+2, width-2, height-CARDY-3, 1)
+    deck.box()
+    deck.addstr(0, 1, "Cards remaining: {}  (Scroll - Arrow keys)".format(len(cards)))
+    p = list(zip(range(0, len(cards)), cards[start:]))[:int((width-2)/CARDX)]
+    boxes = fmap(lambda c: (c[0], c[1], scr.subwin(CARDY, CARDX, height-CARDY-2, c[0]*CARDX+2)), p)
     fmap(lambda b: do(b[2].box(), 
-                  do(b[2].addstr(1,1,b[1]), 
+                   do(b[2].addstr(1,1,b[1]), 
                       b[2].addstr(CARDY-2,CARDX-1-len(b[1]),b[1])))
         , boxes)
 
@@ -44,7 +48,7 @@ def choices(scr, cards):
 
   def click(x, y):
     rs = fmap(lambda c: (c, c*CARDX, (c+1)*CARDX), range(0, len(cards[start:])))
-    l = list(filter(lambda c: c[1] <= x <= c[2] and height-CARDY <= y <= height - 1, rs))
+    l = list(filter(lambda c: c[1] <= x <= c[2] and height-CARDY-2 <= y < height - 2, rs))
     return l[0][0] + start if len(l) != 0 else -1
 
   def setCards(c):
@@ -55,6 +59,23 @@ def choices(scr, cards):
 
   return draw, scroll, click, setCards
 
+def drawDeck(scr, cards):
+  height, width = scr.getmaxyx()
+  cen_y, cen_x = int(height/2), int(width/2)
+  d = 0
+  def draw():
+    nonlocal d
+    d = scr.subwin(CARDY, CARDX, 3, width-CARDX-14)
+    d.box()
+    d.addstr(2, 1, "Draw")
+
+  def click(x, y):
+    nonlocal d
+    if width - CARDX - 14 < x < width - 14 and 3 < y < 3 + CARDY:
+      d.addstr(1, 1, "a")
+
+  return draw, click
+
 def eventLoop(scr):
   curses.mousemask(1)
   curses.curs_set(0)
@@ -62,12 +83,14 @@ def eventLoop(scr):
   cards = ["Clover 1", "Clover 2", "Diamond 3", "Clover 4", "Diamond 5", "Diamond 6", "Diamond 7", "Clover 8", "Diamond 9", "Diamond 10", "Diamond 11"]
   top = "Clover 1"
   cd, cs, cc, sc = choices(scr, cards)
+  #dd, dc = drawDeck(scr, [])
   event = 0
   while event != ord("q"):
     if not checkSize(scr):
       scr.clear()
       scr.addstr("Screen is too small")
       scr.refresh()
+      event = scr.getch()
       continue
 
     scr.refresh()
@@ -80,6 +103,7 @@ def eventLoop(scr):
       cs(1)
     elif event == curses.KEY_MOUSE:
       _, mx, my, _, _ = curses.getmouse()
+      #dc(mx, my)
       selected = cc(mx, my)
       if selected != -1:
         top = cards[selected]
@@ -88,9 +112,9 @@ def eventLoop(scr):
 
     cd()
     card(scr, top)
+    #dd()
     scr.refresh()
     event = scr.getch()
 
 
 curses.wrapper(eventLoop)
-curses.mousemask(1)
