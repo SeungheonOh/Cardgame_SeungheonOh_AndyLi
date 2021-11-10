@@ -43,7 +43,7 @@ def choices(scr, cards):
 
   def scroll(d):
     nonlocal start
-    if 0 <= start+d < len(cards) - int(width/CARDX) + 1:
+    if 0 <= start+d < len(cards) - int((width-2)/CARDX) + 1:
       start = start + d
 
   def click(x, y):
