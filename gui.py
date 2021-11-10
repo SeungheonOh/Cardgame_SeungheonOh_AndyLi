@@ -2,8 +2,9 @@ import os
 import pygame
 from pygame.locals import *
 
-CARDX, CARDY = 226, 314
-WINX, WINY = 1500, 900
+MULT = 0.6
+CARDX, CARDY = int(226 * MULT), int(314 * MULT)
+WINX, WINY = int(1500 * MULT), int(900 * MULT)
 
 cardFile = lambda d: "resources/{}.png".format(d)
 fmap = lambda a, b: list(map(a, b))
@@ -16,8 +17,8 @@ def card(screen, card):
   cen_y, cen_x = int(WINY/2), int(WINX/2)
   drawCard(screen, card, cen_x - int(CARDX/2), 3, CARDX, CARDY)
 
-def choices(scree, cards):
-  start = 500 
+def choices(screen, cards):
+  start = 0 
   cards = cards
   if len(cards) < int(WINX/CARDX):
     start = 0
@@ -40,11 +41,11 @@ def choices(scree, cards):
       start = start + d
 
   def click(x, y):
+    p = list(zip(range(0, len(cards)), cards[start:]))[:int((WINX-2)/CARDX)]
     offset = int((WINX-len(p) * CARDX)/2)
-    x = x + offset
-    rs = fmap(lambda c: (c, c*CARDX, (c)*CARDX), range(0, len(cards[start:])))
-    l = list(filter(lambda c: c[1] <= x <= c[2] and WINY-CARDY-2 <= y < WINY - 2, rs))
-    return l[0][0] + start if len(l) != 0 else -1
+    rs = fmap(lambda c: (c, c*CARDX, (c+1)*CARDX), range(0, len(cards[start:])))
+    l = list(filter(lambda c: c[1] <= x-offset <= c[2] and WINY-CARDY-2 <= y < WINY - 2, rs))
+    return l[0][0] + start if len(l) != 0 else None
 
   def setCards(c):
     nonlocal cards, start
@@ -54,36 +55,41 @@ def choices(scree, cards):
 
   return draw, scroll, click, setCards
 
-pygame.init()
-screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
+def main():
+  pygame.init()
+  screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
 
-cards = ("AH 2S 3D 4C 5C 6H 7S 8D".split(" "))
-dd, ds, dc, du = choices(screen, cards)
+  current = "0H"
+  cards = ("AH 2S 3D 4C 5C 6H 7S 8D 9S 0C".split(" "))
+  dd, ds, dc, du = choices(screen, cards)
 
-while True:
-  screen.fill((0,0,0))
-  card(screen, "0H")
-  dd()
-  pygame.display.flip()
-  
+  while True:
+    screen.fill((0,0,0))
+    card(screen, current)
+    dd()
+    pygame.display.flip()
 
-  pygame.event.pump()
-  for event in pygame.event.get():
-    if event.type == QUIT:
-        pygame.display.quit()
-    elif event.type == KEYDOWN:
-      if event.key == K_q:
-        pygame.display.quit()
-      elif event.key == K_LEFT:
-        ds(-1)
-      elif event.key == K_RIGHT:
-        ds(1)
-    elif event.type == MOUSEBUTTONDOWN:
-      if event.button == 4: ds(-1)
-      elif event.button == 5: ds(1)
-      if event.button == 1: 
-        x, y = pygame.mouse.get_pos()
-        cn = dc(x, y)
-        print(cards[cn])
-        del cards[cn]
-        du(cards)
+    pygame.event.pump()
+    for event in pygame.event.get():
+      if event.type == QUIT:
+          pygame.display.quit()
+      elif event.type == KEYDOWN:
+        if event.key == K_q:
+          pygame.display.quit()
+        elif event.key == K_LEFT:
+          ds(-1)
+        elif event.key == K_RIGHT:
+          ds(1)
+      elif event.type == MOUSEBUTTONDOWN:
+        if event.button == 4: ds(-1)
+        elif event.button == 5: ds(1)
+        if event.button == 1: 
+          x, y = pygame.mouse.get_pos()
+          cn = dc(x, y)
+          if cn == None: 
+            continue
+          current = cards[cn]
+          del cards[cn]
+          du(cards)
+
+main()
