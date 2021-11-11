@@ -8,6 +8,10 @@ WINX, WINY = int(1500 * MULT), int(900 * MULT)
 
 cardFile = lambda d: "resources/{}.png".format(d)
 fmap = lambda a, b: list(map(a, b))
+cards = ["2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K", "A"]
+nextValid = lambda a, b: (lambda d: d[d.index(a)] == d[d.index(b)] or d[d.index(a)] == d[d.index(b)-1])(cards)
+cc = lambda a: a[0]
+varify = lambda a, b: nextValid(cc(a), cc(b))
 
 def drawCard(screen, card, x, y, w, h):
   pic = pygame.transform.scale(pygame.image.load(cardFile(card)), (w, h))
@@ -59,7 +63,7 @@ def main():
   screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
 
   current = "0H"
-  cards = ("AH 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C".split(" "))
+  cards = ("JH QD KS AH JH QD KS JH QD KS 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C".split(" "))
   dd, ds, dc, du = choices(screen, cards)
 
   while True:
@@ -85,6 +89,9 @@ def main():
           x, y = pygame.mouse.get_pos()
           cn = dc(x, y)
           if cn == None: 
+            continue
+          if not varify(current, cards[cn]):
+            print("not vaild card")
             continue
           current = cards[cn]
           del cards[cn]
