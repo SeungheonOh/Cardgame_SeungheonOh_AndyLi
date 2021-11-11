@@ -4,7 +4,7 @@ from pygame.locals import *
 
 import api
 
-MULT = 1
+MULT = 0.6
 CARDX, CARDY = int(226 * MULT), int(314 * MULT)
 WINX, WINY = int(1500 * MULT), int(900 * MULT)
 
@@ -14,6 +14,15 @@ cards = ["2", "3", "4", "5", "6", "7", "8", "9", "0", "J", "Q", "K", "A"]
 nextValid = lambda a, b: (lambda d: d[d.index(a)] == d[d.index(b)] or d[d.index(a)] == d[d.index(b)-1])(cards)
 cc = lambda a: a[0]
 varify = lambda a, b: nextValid(cc(a), cc(b))
+
+def drawText(screen, s, x, y):
+  if s == "" or s == None:
+    return
+  font = pygame.font.Font(None, 24)
+  font_color = (255,255,255)
+  font_background = (0,0,0)
+  t = font.render(s, True, font_color, font_background)
+  screen.blit(t, (x, y))
 
 def drawCard(screen, card, x, y, w, h):
   pic = pygame.transform.scale(pygame.image.load(cardFile(card)), (w, h))
@@ -33,13 +42,7 @@ def choices(screen, cards):
   
   def draw():
     p = list(zip(range(0, len(cards)), cards[start:]))[:int((WINX-2)/CARDX)]
-    fmap(lambda c: drawCard(screen, 
-                            c[1], 
-                            c[0]*CARDX + int((WINX-len(p) * CARDX)/2), 
-                            WINY-CARDY,
-                            CARDX, 
-                            CARDY), 
-        p)
+    fmap(lambda c: drawCard(screen, c[1], c[0]*CARDX + int((WINX-len(p) * CARDX)/2), WINY-CARDY, CARDX, CARDY), p)
 
   def scroll(d):
     nonlocal start
@@ -61,6 +64,7 @@ def choices(screen, cards):
   return draw, scroll, click, setCards
 
 def main(deck):
+  bullshitable = False
   pygame.init()
   screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
 
@@ -72,6 +76,7 @@ def main(deck):
     screen.fill((0,100,0))
     card(screen, current)
     dd()
+    drawText(screen, "BS" if bullshitable else None, 10, 5)
     pygame.display.flip()
 
     for event in pygame.event.get():
@@ -93,12 +98,14 @@ def main(deck):
           if cn == None: 
             continue
           if not varify(current, cards[cn]):
-            print("not vaild card")
-            continue
+            bullshitable = True
+          else: 
+            bullshitable = False
           current = cards[cn]
           del cards[cn]
           du(cards)
+          print(bullshitable)
+          
 
 deck_id, players = api.game_start(5)
-
 main(api.decks(deck_id, players)[0])
