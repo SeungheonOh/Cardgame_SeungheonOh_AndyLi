@@ -54,7 +54,7 @@ def game_start(num_players):
   for i in range (0, 52): 
     cnt[i%num_players] += 1
 
-  for i in range(0, num_players): 
+  for i in range(0, num_players): # TODO: purge this for loop
     code_list = codes(api["random"](deck_id, cnt[i]))
     api["add"](deck_id, "P{}".format(i), ",".join(code_list))
     temp.append("P{}".format(i))
