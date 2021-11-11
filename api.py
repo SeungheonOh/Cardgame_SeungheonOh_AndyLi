@@ -19,42 +19,42 @@ newDeckParser = lambda d: None if d["success"] == False else d["deck_id"]
 drawParser    = lambda d: d
 
 apiDef = { 
-  "new"    : ("/deck/new/shuffle/?deck_count={}", wrapFailure(newDeckParser))
-, "random" : ("/deck/{}/draw/?count={}", wrapFailure(drawParser))
-, "shuffle": ("/deck/{}/shuffle/?remainting={}", wrapFailure(id))
-, "draw":   ("/deck/{}/pile/{}/draw/>?cards={}", wrapFailure(id))
-, "add": ("/deck/{}/pile/{}/add/?cards={}", wrapFailure(id))
-, "list":  ("/deck/{}/pile/{}/list", wrapFailure(id))
+    "new"    : ("/deck/new/shuffle/?deck_count={}", wrapFailure(newDeckParser))
+  , "random" : ("/deck/{}/draw/?count={}"         , wrapFailure(drawParser))
+  , "shuffle": ("/deck/{}/shuffle/?remainting={}" , wrapFailure(id))
+  , "draw"   : ("/deck/{}/pile/{}/draw/>?cards={}", wrapFailure(id))
+  , "add"    : ("/deck/{}/pile/{}/add/?cards={}"  , wrapFailure(id))
+  , "list"   : ("/deck/{}/pile/{}/list"           , wrapFailure(id))
 }
 
-codes = lambda di: fmap(lambda d: d["code"], di["cards"])
+codes    = lambda di: fmap(lambda d: d["code"], di["cards"])
 fullName = lambda s: fn2(s[1]) + " " + fn1(s[0])
-fn1 = lambda s: (lambda n: s if n == None else n)(
+fn1      = lambda s: (lambda n: s if n == None else n)(
                 { "A" : "Ace" 
-                , "J" : "Jack"
-                , "Q" : "Queen"
-                , "K" : "King"
-                , "0" : "10"
+                , "J": "Jack"
+                , "Q": "Queen"
+                , "K": "King"
+                , "0": "10"
                 }.get(s))
 fn2 = lambda s: (lambda n: s if n == None else n)(
                 { "H" : "Heart" 
-                , "D" : "Diamond"
-                , "S" : "Spade"
-                , "C" : "Clover"
+                , "D": "Diamond"
+                , "S": "Spade"
+                , "C": "Clover"
                 }.get(s))
 
 decks = lambda deck_id, players: fmap(lambda p: codes(api["list"](deck_id, p)["piles"][p]), players)
 
 api = mkEndpoints(apiDef)
 
-def game_start(num_players):
-  temp = []
+def game_start(num_players): 
+  temp    = []
   deck_id = api["new"](1)
-  cnt = [0 for i in range(num_players)]
-  for i in range (0, 52):
-    cnt[i%num_players]+=1
+  cnt     = [0 for i in range(num_players)]
+  for i in range (0, 52): 
+    cnt[i%num_players] += 1
 
-  for i in range(0, num_players):
+  for i in range(0, num_players): 
     code_list = codes(api["random"](deck_id, cnt[i]))
     api["add"](deck_id, "P{}".format(i), ",".join(code_list))
     temp.append("P{}".format(i))
