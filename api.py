@@ -52,9 +52,9 @@ print(fmap(lambda d: d["code"], dicta["cards"]))
 print(fmap(fullName, codes(dicta)))
 print(api["add"](deck_id, "pileid", ",".join(codes(dicta))))
 print(api["list"](deck_id, "pileid"))
-'''
 
-pile = lambda i: "player " + str(i)
+
+pile = lambda i: "P" + str(i)
 
 def game_start(num_players):
   deck_id = api["new"](1)
@@ -64,15 +64,11 @@ def game_start(num_players):
     cnt[i%num_players]+=1
   print(cnt)
   for i in range(0, num_players):
-    code_list = get_code_list(api["random"](deck_id, cnt[i]))
-    print(code_list)
-    print(api["add"](deck_id, pile(i), code_list))
+    code_list = codes(api["random"](deck_id, cnt[i]))
+    print(','.join(code_list))
+    print(pile(i))
+    print(api["add"](deck_id, pile(i), ",".join(code_list)))
     #print(get_code_list(api["list"](deck_id, name(i))['piles'][name(i)]['cards']))
-#print(api["add"](deck_id))
+
 
 game_start(5)
-'''
-print(api["shuffle"](deck_id, True))
-print(api["random"](deck_id, 1))
-print(api["throw"](deck_id))
-'''
