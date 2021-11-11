@@ -27,24 +27,30 @@ apiDef = {
 , "list":  ("/deck/{}/pile/{}/list", wrapFailure(id))
 }
 
-def get_code_list(dicta): 
-  list1 = []
-  for card in dicta['cards']:
-    list1.append(card['code'])
-  str1 = ""
-  for card in list1:
-    str1+=card+","
-  str1 = str1[0:len(str1)-1]
-  return str1
+codes = lambda di: fmap(lambda d: d["code"], di["cards"])
+fullName = lambda s: fn2(s[1]) + " " + fn1(s[0])
+fn1 = lambda s: (lambda n: s if n == None else n)(
+                { "A" : "Ace" 
+                , "J" : "Jack"
+                , "Q" : "Queen"
+                , "K" : "King"
+                , "0" : "10"
+                }.get(s))
+fn2 = lambda s: (lambda n: s if n == None else n)(
+                { "H" : "Heart" 
+                , "D" : "Diamond"
+                , "S" : "Spade"
+                , "C" : "Clover"
+                }.get(s))
 
 api = mkEndpoints(apiDef)
-'''
 deck_id = api["new"](1)
 print(deck_id)
 
 dicta = api["random"](deck_id, 5)
-print(dicta)
-print(api["add"](deck_id, "pileid", get_code_list(dicta)))
+print(fmap(lambda d: d["code"], dicta["cards"]))
+print(fmap(fullName, codes(dicta)))
+print(api["add"](deck_id, "pileid", ",".join(codes(dicta))))
 print(api["list"](deck_id, "pileid"))
 '''
 
