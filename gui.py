@@ -2,6 +2,8 @@ import os
 import pygame
 from pygame.locals import *
 
+import api
+
 MULT = 1
 CARDX, CARDY = int(226 * MULT), int(314 * MULT)
 WINX, WINY = int(1500 * MULT), int(900 * MULT)
@@ -58,12 +60,12 @@ def choices(screen, cards):
 
   return draw, scroll, click, setCards
 
-def main():
+def main(deck):
   pygame.init()
   screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
 
   current = "0H"
-  cards = ("JH QD KS AH JH QD KS JH QD KS 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C".split(" "))
+  cards = deck
   dd, ds, dc, du = choices(screen, cards)
 
   while True:
@@ -97,4 +99,6 @@ def main():
           del cards[cn]
           du(cards)
 
-main()
+deck_id, players = api.game_start(5)
+
+main(api.decks(deck_id, players)[0])
