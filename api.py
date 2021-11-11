@@ -44,31 +44,20 @@ fn2 = lambda s: (lambda n: s if n == None else n)(
                 }.get(s))
 
 api = mkEndpoints(apiDef)
-deck_id = api["new"](1)
-print(deck_id)
-
-dicta = api["random"](deck_id, 5)
-print(fmap(lambda d: d["code"], dicta["cards"]))
-print(fmap(fullName, codes(dicta)))
-print(api["add"](deck_id, "pileid", ",".join(codes(dicta))))
-print(api["list"](deck_id, "pileid"))
-
-
-pile = lambda i: "P" + str(i)
 
 def game_start(num_players):
+  temp = []
   deck_id = api["new"](1)
   cnt = [0 for i in range(num_players)]
-  
   for i in range (0, 52):
     cnt[i%num_players]+=1
-  print(cnt)
+
   for i in range(0, num_players):
     code_list = codes(api["random"](deck_id, cnt[i]))
-    print(','.join(code_list))
-    print(pile(i))
-    print(api["add"](deck_id, pile(i), ",".join(code_list)))
-    #print(get_code_list(api["list"](deck_id, name(i))['piles'][name(i)]['cards']))
+    api["add"](deck_id, "P{}".format(i), ",".join(code_list))
+    temp.append("P{}".format(i))
+  return deck_id, temp
 
+deck_id, players = game_start(5)
 
-game_start(5)
+print(fmap(lambda p: codes(api["list"](deck_id, p)),players))
