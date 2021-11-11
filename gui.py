@@ -2,7 +2,7 @@ import os
 import pygame
 from pygame.locals import *
 
-MULT = 0.6
+MULT = 1
 CARDX, CARDY = int(226 * MULT), int(314 * MULT)
 WINX, WINY = int(1500 * MULT), int(900 * MULT)
 
@@ -41,8 +41,7 @@ def choices(screen, cards):
       start = start + d
 
   def click(x, y):
-    p = list(zip(range(0, len(cards)), cards[start:]))[:int((WINX-2)/CARDX)]
-    offset = int((WINX-len(p) * CARDX)/2)
+    offset = int((WINX-len(cards[start:][:int((WINX-2)/CARDX)]) * CARDX)/2)
     rs = fmap(lambda c: (c, c*CARDX, (c+1)*CARDX), range(0, len(cards[start:])))
     l = list(filter(lambda c: c[1] <= x-offset <= c[2] and WINY-CARDY-2 <= y < WINY - 2, rs))
     return l[0][0] + start if len(l) != 0 else None
@@ -60,16 +59,15 @@ def main():
   screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
 
   current = "0H"
-  cards = ("AH 2S 3D 4C 5C 6H 7S 8D 9S 0C".split(" "))
+  cards = ("AH 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C AH 2S 3D 4C 5C 6H 7S 8D 9S 0C".split(" "))
   dd, ds, dc, du = choices(screen, cards)
 
   while True:
-    screen.fill((0,0,0))
+    screen.fill((0,100,0))
     card(screen, current)
     dd()
     pygame.display.flip()
 
-    pygame.event.pump()
     for event in pygame.event.get():
       if event.type == QUIT:
           pygame.display.quit()
