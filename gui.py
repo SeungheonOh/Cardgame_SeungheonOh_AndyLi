@@ -1,4 +1,6 @@
 import os
+import random
+import time
 import pygame
 from pygame.locals import *
 
@@ -29,7 +31,7 @@ def drawCard(screen, card, x, y, w, h):
   screen.blit(pic, (x, y))
 
 def card(screen, card):
-  cen_y, cen_x = int(WINY/2), int(WINX/2)
+  _, cen_x = int(WINY/2), int(WINX/2)
   drawCard(screen, card, cen_x - int(CARDX/2), 3, CARDX, CARDY)
 
 def choices(screen, cards):
@@ -41,6 +43,7 @@ def choices(screen, cards):
     start = len(cards) - int(WINX/CARDX)
   
   def draw():
+    drawText(screen, "Cards Remaining {}".format(len(cards)), 0, WINY-CARDY-15)
     p = list(zip(range(0, len(cards)), cards[start:]))[:int((WINX-2)/CARDX)]
     fmap(lambda c: drawCard(screen, c[1], c[0]*CARDX + int((WINX-len(p) * CARDX)/2), WINY-CARDY, CARDX, CARDY), p)
 
@@ -53,24 +56,72 @@ def choices(screen, cards):
     offset = int((WINX-len(cards[start:][:int((WINX-2)/CARDX)]) * CARDX)/2)
     rs = fmap(lambda c: (c, c*CARDX, (c+1)*CARDX), range(0, len(cards[start:])))
     l = list(filter(lambda c: c[1] <= x-offset <= c[2] and WINY-CARDY-2 <= y < WINY - 2, rs))
-    return l[0][0] + start if len(l) != 0 else None
+    return cards[l[0][0] + start] if len(l) != 0 else None
 
   def setCards(c):
     nonlocal cards, start
     cards = c 
     start = 0
     draw()
+  
+  def c():
+    nonlocal cards
+    return cards
 
-  return draw, scroll, click, setCards
+  return draw, scroll, click, setCards, c
 
-def main(deck):
+def computer(screen, d, curr, bsable):
+  if bsable:
+    if 0 < random.randint(0, 100) < 40:
+      while True:
+        screen.fill((0,100,0))
+        drawText(screen, "You got caught BSing the computer, prepare to be exterminated", 150, WINY/2)
+        pygame.display.flip()
+        for event in pygame.event.get():
+          if event.type == QUIT:
+              pygame.display.quit()
+          elif event.type == KEYDOWN:
+            if event.key == K_q:
+              pygame.display.quit()
+
+  deck = api.decks(d, ["P0", "P1"])[1]
+  if 0 < random.randint(0, 100) < 70:
+    pick = list(filter(lambda c: varify(curr, c), deck))
+    if len(pick) == 0:
+      pick = deck[0]
+      print("computer bsed you")
+    else:
+      pick = pick[0]
+    api.api["return"](d, "P1", pick)
+    return pick, not varify(curr, pick)
+  else:
+    pick = deck[random.randint(0, len(deck)-1)]
+    api.api["return"](d, "P1", pick)
+    print("computer bsed you")
+    return pick, not varify(curr, pick)
+
+def win(screen):
+  while True:
+    screen.fill((0,100,0))
+    drawText(screen, "You won", 150, WINY/2)
+    pygame.display.flip()
+    for event in pygame.event.get():
+      if event.type == QUIT:
+          pygame.display.quit()
+      elif event.type == KEYDOWN:
+        if event.key == K_q:
+          pygame.display.quit()
+
+def main():
+  deck_id, players = api.game_start(2)
+
   bullshitable = False
+  bullshitcatchable = False
   pygame.init()
   screen = pygame.display.set_mode((WINX, WINY), HWSURFACE | DOUBLEBUF)
 
   current = "0H"
-  cards = deck
-  dd, ds, dc, du = choices(screen, cards)
+  dd, ds, dc, du, dgc = choices(screen, api.decks(deck_id, players)[0])
 
   while True:
     screen.fill((0,100,0))
@@ -89,6 +140,9 @@ def main(deck):
           ds(-1)
         elif event.key == K_RIGHT:
           ds(1)
+        elif event.key == K_SPACE:
+          if bullshitcatchable:
+            win(screen)
       elif event.type == MOUSEBUTTONDOWN:
         if event.button == 4: ds(-1)
         elif event.button == 5: ds(1)
@@ -97,15 +151,21 @@ def main(deck):
           cn = dc(x, y)
           if cn == None: 
             continue
-          if not varify(current, cards[cn]):
+          if not varify(current, cn):
             bullshitable = True
           else: 
             bullshitable = False
-          current = cards[cn]
-          del cards[cn]
-          du(cards)
-          print(bullshitable)
+          drawText(screen, "Processing...", 10, 25)
+          pygame.display.flip()
+          current = cn
+          api.api["return"](deck_id, "P0", current)
+          du(api.decks(deck_id, players)[0])
+          dd()
+          pygame.display.flip()
+
+          drawText(screen, "Computer Turn...", 10, 25)
+          pygame.display.flip()
+          current, bullshitcatchable = computer(screen, deck_id, current, bullshitable)
           
 
-deck_id, players = api.game_start(5)
-main(api.decks(deck_id, players)[0])
+main()

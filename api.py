@@ -16,15 +16,16 @@ mkEndpoints = lambda e: zipdict(list(e.keys()), fmap(lambda a: comp(a[1], getRec
 wrapFailure   = lambda p: lambda d: None if d.status_code != 200 else p(dict(d.json()))
 defaultParser = lambda: wrapFailure(id)
 newDeckParser = lambda d: None if d["success"] == False else d["deck_id"]
-drawParser    = lambda d: d
 
 apiDef = { 
-    "new"    : ("/deck/new/shuffle/?deck_count={}", wrapFailure(newDeckParser))
-  , "random" : ("/deck/{}/draw/?count={}"         , wrapFailure(drawParser))
-  , "shuffle": ("/deck/{}/shuffle/?remainting={}" , wrapFailure(id))
-  , "draw"   : ("/deck/{}/pile/{}/draw/>?cards={}", wrapFailure(id))
-  , "add"    : ("/deck/{}/pile/{}/add/?cards={}"  , wrapFailure(id))
-  , "list"   : ("/deck/{}/pile/{}/list"           , wrapFailure(id))
+    "new"    : ("/deck/new/shuffle/?deck_count={}" , wrapFailure(newDeckParser))
+  , "random" : ("/deck/{}/draw/?count={}"          , wrapFailure(id))
+  , "shuffle": ("/deck/{}/shuffle/?remainting={}"  , wrapFailure(id))
+  , "draw"   : ("/deck/{}/pile/{}/draw/>?cards={}" , wrapFailure(id))
+  , "add"    : ("/deck/{}/pile/{}/add/?cards={}"   , wrapFailure(id))
+  , "list"   : ("/deck/{}/pile/{}/list"            , wrapFailure(id))
+  , "return" : ("/deck/{}/pile/{}/return/?cards={}", wrapFailure(id))
+
 }
 
 codes    = lambda di: fmap(lambda d: d["code"], di["cards"])
