@@ -6,7 +6,7 @@ from pygame.locals import *
 
 import api
 
-MULT = 0.6
+MULT = 1
 CARDX, CARDY = int(226 * MULT), int(314 * MULT)
 WINX, WINY = int(1500 * MULT), int(900 * MULT)
 
@@ -76,6 +76,10 @@ def computer(screen, d, curr, bsable):
       while True:
         screen.fill((0,100,0))
         drawText(screen, "You got caught BSing the computer, prepare to be exterminated", 150, WINY/2)
+        pic = pygame.image.load(cardFile("rob"))
+        pic = pygame.transform.scale(pic, (pic.get_width() * 0.6,pic.get_height()*0.6))
+        screen.blit(pic, (int(WINX * 0.6), int(WINY * 0.4)))
+
         pygame.display.flip()
         for event in pygame.event.get():
           if event.type == QUIT:
@@ -89,7 +93,6 @@ def computer(screen, d, curr, bsable):
     pick = list(filter(lambda c: varify(curr, c), deck))
     if len(pick) == 0:
       pick = deck[0]
-      print("computer bsed you")
     else:
       pick = pick[0]
     api.api["return"](d, "P1", pick)
@@ -97,7 +100,6 @@ def computer(screen, d, curr, bsable):
   else:
     pick = deck[random.randint(0, len(deck)-1)]
     api.api["return"](d, "P1", pick)
-    print("computer bsed you")
     return pick, not varify(curr, pick)
 
 def win(screen):
